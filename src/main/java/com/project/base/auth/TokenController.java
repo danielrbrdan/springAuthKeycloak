@@ -14,13 +14,13 @@ import org.springframework.web.client.RestTemplate;
 
 import com.project.base.auth.dto.UserDTO;
 
-@RequestMapping("/token")
+@RequestMapping("/auth")
 @RestController
 public class TokenController {
     private static final String REALM = "main";
     private static final String KEYCLOACK_URL_TOKEN = "http://localhost:8080/realms/"+REALM+"/protocol/openid-connect/token";
 
-    @PostMapping()
+    @PostMapping("/token")
     public ResponseEntity<String> token(@RequestBody UserDTO user) {
         HttpHeaders headers = new HttpHeaders();
         RestTemplate rt = new RestTemplate();
