@@ -23,3 +23,8 @@ spring:
         jwt:
           issuer-uri: http://localhost:8080/realms/main
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+keycloak:
+  auth-server-url: http://localhost:8080
+  realm: main
+  client-id: myClientId
+  credentials.secret: 2Ioaw7g0QaowFp2Tk4DBtRLuHQfkRvlc

@@ -1,44 +1,32 @@
 package com.project.base.auth;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import javax.ws.rs.core.Response;
+
+import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import com.project.base.auth.dto.UserDTO;
+import com.project.base.auth.keycloack.KeycloakService;
+
+import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/auth")
 @RestController
+@RequiredArgsConstructor
 public class TokenController {
-    private static final String REALM = "main";
-    private static final String KEYCLOACK_URL_TOKEN = "http://localhost:8080/realms/"+REALM+"/protocol/openid-connect/token";
+    private final KeycloakService keycloakService;
 
     @PostMapping("/token")
-    public ResponseEntity<String> token(@RequestBody UserDTO user) {
-        HttpHeaders headers = new HttpHeaders();
-        RestTemplate rt = new RestTemplate();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    public AccessTokenResponse token(@RequestBody UserDTO user) {
+        return this.keycloakService.login(user);
+    }
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("client_id", user.clientId);
-        formData.add("username", user.username);
-        formData.add("password", user.password);
-        formData.add("grant_type", user.grantType);
-
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<MultiValueMap<String, String>>(formData,
-                headers);
-
-        var result = rt.postForEntity(KEYCLOACK_URL_TOKEN, entity,
-                String.class);
-
-        return result;
+    @PostMapping("/create")
+    public Response createUser(@RequestBody UserDTO user) {
+        return this.keycloakService.createUser(user);
     }
 
 }
