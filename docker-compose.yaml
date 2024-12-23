@@ -1,0 +1,81 @@
+version: "3.7"
+
+services:
+  db:
+    image: mysql:9.1
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql  # This line adds the volume to persist MySQL data
+    networks:
+      - backend
+
+  app-server:
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/test
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    networks:
+      - backend
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=root --execute \"SHOW DATABASES;\""
+      interval: 2s
+      timeout: 20s
+      retries: 10
+
+  keycloak-db:
+    image: mysql:9.1
+    environment:
+      MYSQL_ROOT_PASSWORD: keycloakroot
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloakuser
+      MYSQL_PASSWORD: keycloakpassword
+    volumes:
+      - keycloak_db_data:/var/lib/mysql
+    networks:
+      - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    environment:
+      KEYCLOAK_ADMIN: admin  # Admin username
+      KEYCLOAK_ADMIN_PASSWORD: adminpassword  # Admin password
+      DB_VENDOR: mysql
+      DB_ADDR: keycloak-db
+      DB_PORT: 3306
+      DB_DATABASE: keycloak
+      DB_USER: keycloakuser
+      DB_PASSWORD: keycloakpassword
+      KEYCLOAK_COOKIE_SECURE: false
+      KEYCLOAK_COOKIE_SAMESITE: "None"
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+    networks:
+      - backend
+    restart: always
+    command:
+      - start-dev
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db_data:
+  keycloak_db_data:

@@ -42,6 +42,7 @@ public class KeycloakService {
     }
 
     public Response createUser(UserDTO request) {
+        System.out.println("Creating user: " + request.getUsername());
         UsersResource usersResource = this.keycloakAdminClient.realm(this.realm).users();
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(request.getPassword());
 
@@ -57,14 +58,18 @@ public class KeycloakService {
 
         try (Response response = usersResource.create(user)) {
             if (response.getStatus() == 201) {
-                return Response.status(Response.Status.OK).build();
+                System.out.println("Response Status: " + response.getStatus()); 
+                System.out.println("Response Entity: " + response.readEntity(String.class));
+                return Response.status(Response.Status.CREATED).build();
             } else {
+                System.out.println("Response Status: " + response.getStatus()); 
+                System.out.println("Response Entity: " + response.readEntity(String.class));
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
-
     }
 
     private Keycloak keycloakCredentialBuilder(UserDTO request) {
